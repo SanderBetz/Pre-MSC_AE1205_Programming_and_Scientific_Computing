@@ -63,8 +63,12 @@ def initialize_program() -> float:
             print(f'--> No change requested, standard ISA (T: {base_temperature} K) used')
             return
         else:
-            print(f'--> Change in base ISA requested from T[0 m]: {base_temperature} K to T[0 m]: {float(ent)} K')
-            base_temperature = float(ent)
+            if float(ent) < 0:
+                print('--> Temperature in Kelvin cannot be negative, temperature has been set to the default temperature')
+                return
+            else:
+                print(f'--> Change in base ISA requested from T[0 m]: {base_temperature} K to T[0 m]: {float(ent)} K')
+                base_temperature = float(ent)
 
     def height_type() -> int:
         print('1. Calculate ISA for altitude in meters \n'
@@ -128,7 +132,6 @@ def calc_layer_properties(altitude: float, t0: float, p0: float, layer: Layer) -
     temperature = calc_height_temperature(altitude, t0, layer)
     pressure = calc_height_pressure(altitude, p0, t0, temperature, layer)
     density = calc_density(pressure, temperature)
-
     return temperature, pressure, density
 
 def main():
