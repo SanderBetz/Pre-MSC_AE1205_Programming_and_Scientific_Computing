@@ -1,32 +1,31 @@
-# Put imports here
+# Imports
 import math
 
-# Main code
-"Universal constants"
+
+# Universal constants
 base_gravity        : float = 9.80665
 gas_constant        : float = 287.0
 
-"Sea level values"
+# Sea level values
 base_temperature    : float = 288.15
 base_pressure       : float = 101325
 
-"Conversions"
+# Conversions
 ft_to_m = 0.3048
 FL_to_m = 0.3048 * 1000
 
-"""
-Layers for Geopotential altitude h
 
-T1 = T0 + a(h1 - h0)
+# Layers for Geopotential altitude h
 
-Troposphere     0    < h <= 11 km    a = -6.5 K/km = -0.0065 K/m
-Tropopause      11 km < h <= 20 km   isotherm (a = 0)
-Stratosphere    20 km < h <= 32 km   a = +1.0 K/km = +0.0010 K/m 
-Stratosphere    32 km < h <= 47 km   a = +2.8 K/km = +0.0028 K/m
-Stratopause     47 km < h <= 51 km   isotherm (a = 0)
-Mesosphere      51 km < h <= 71 km   a = -2.8 K/km = -0.0028 K/m
-Mesosphere      71 km < h <= 86 km   a = -2.0 K/km = -0.0020 K/m
-"""
+# T1 = T0 + a(h1 - h0)
+
+# Troposphere     0    < h <= 11 km    a = -6.5 K/km = -0.0065 K/m
+# Tropopause      11 km < h <= 20 km   isotherm (a = 0)
+# Stratosphere    20 km < h <= 32 km   a = +1.0 K/km = +0.0010 K/m
+# Stratosphere    32 km < h <= 47 km   a = +2.8 K/km = +0.0028 K/m
+# Stratopause     47 km < h <= 51 km   isotherm (a = 0)
+# Mesosphere      51 km < h <= 71 km   a = -2.8 K/km = -0.0028 K/m
+# Mesosphere      71 km < h <= 86 km   a = -2.0 K/km = -0.0020 K/m
 
 class Layer:
     def __init__(self, min_height: int, max_height: int, coefficient: float, layer_name: str, layer_type: str):
