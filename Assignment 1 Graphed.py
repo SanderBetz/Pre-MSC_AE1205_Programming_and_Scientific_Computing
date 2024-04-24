@@ -2,6 +2,8 @@
 import math
 import matplotlib.pyplot as plt
 
+"This is done from home!"
+
 # Main code
 "Universal constants"
 base_gravity        : float = 9.80665
@@ -29,6 +31,7 @@ Mesosphere      51 km < h <= 71 km   a = -2.8 K/km = -0.0028 K/m
 Mesosphere      71 km < h <= 86 km   a = -2.0 K/km = -0.0020 K/m
 """
 
+
 class Layer:
     def __init__(self, min_height: int, max_height: int, coefficient: float, layer_name: str, layer_type: str):
         self.min_height     : int = min_height
@@ -36,6 +39,7 @@ class Layer:
         self.coefficient    : float = coefficient
         self.layer_name     : str = layer_name
         self.layer_type     : str = layer_type
+
 
 layers = [
     Layer(0, 11000, -0.0065, 'Troposphere', 'non-isothermal'),
@@ -46,6 +50,7 @@ layers = [
     Layer(51001, 71000, -0.0028, 'Mesosphere', 'non-isothermal'),
     Layer(71001, 86000, -0.0020, 'Mesosphere', 'non-isothermal'),
 ]
+
 
 def initialize_program() -> float:
     print("***** ISA calculator *****")
@@ -83,16 +88,22 @@ def initialize_program() -> float:
 
     return inp
 
+
 def calc_height_temperature(height: int, t0: float, layer: Layer) -> float:
     return t0 + (min(height, layer.max_height) - layer.min_height) * layer.coefficient
+
+
 def calc_height_pressure(altitude : int, p0 : float, t0 : float, t1: float, layer: Layer) -> float:
 
     if layer.layer_type == 'non-isothermal':
         return p0 * (t1 / t0) ** (-base_gravity / (layer.coefficient * gas_constant))
     elif layer.layer_type == 'isothermal':
         return p0 * math.e ** (-(base_gravity / (gas_constant * t0)) * (min(altitude, layer.max_height) - layer.min_height))
+
+
 def calc_density(pressure : float, temperature : float) -> float:
     return pressure / (gas_constant * temperature)
+
 
 def calc_layer_properties(altitude: int, t0: float, p0: float, layer: Layer):
     temperature = calc_height_temperature(altitude, t0, layer)
@@ -100,6 +111,7 @@ def calc_layer_properties(altitude: int, t0: float, p0: float, layer: Layer):
     density = calc_density(pressure, temperature)
 
     return temperature, pressure, density
+
 
 def main():
     "altitude = initialize_program()"
@@ -132,7 +144,6 @@ def main():
         pressure_list.append(layer_props[1])
         density_list.append(layer_props[2])
 
-
         h += 100
 
     fig, ax = plt.subplots()
@@ -155,6 +166,7 @@ def main():
     ax2.spines.top.set_position(("axes", 2.4))
 
     plt.show()
+
 
 if __name__ == '__main__':
     main()
