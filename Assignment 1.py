@@ -15,7 +15,7 @@ ft_to_m = 0.3048
 FL_to_m = 0.3048 * 1000
 
 """
-Layers for geopotential altitude h
+Layers for Geopotential altitude h
 
 T1 = T0 + a(h1 - h0)
 
@@ -48,9 +48,7 @@ layers = [
 
 def initialize_program() -> float:
     print("***** ISA calculator *****")
-    print('1. Calculate ISA for altitude in meters')
-    print('2. Calculate ISA for altitude in feet')
-    print('3. Calculate ISA for altitude in FL')
+
 
     type_list = {
         1: 'm',
@@ -58,20 +56,38 @@ def initialize_program() -> float:
         3: 'FL'
     }
 
+    def define_standard_SLTemp() -> None:
+        global base_temperature
+        ent = input('Would you like to change the starting sea level temperature? \n'
+                    'If no change is requested, press ENTER, otherwise enter temperature: ')
+        if ent == '':
+            print(f'--> No change requested, standard ISA (T: {base_temperature} K) used')
+            return
+        else:
+            print(f'--> Change in base ISA requested from T[0 m]: {base_temperature} K to T[0 m]: {float(ent)} K')
+            base_temperature = float(ent)
+
     def height_type() -> int:
+        print('1. Calculate ISA for altitude in meters')
+        print('2. Calculate ISA for altitude in feet')
+        print('3. Calculate ISA for altitude in FL')
         type_height = int(input('Enter your choise (number from list): '))
-        if type_height > 3:
-            print('Please input a valid selection')
+        if abs(type_height) > 3:
+            print('--> Please input a valid selection')
             type_height = height_type()
         return type_height
 
     def inp_height(check_type: int) -> float:
-        inp = int(input(f'Enter altitude [{type_list[check_type]}]: '))
-        if inp > 86000:
-            print("You're in space now! Congrats! However please input a valid altitude in the atmosphere")
-            inp = initialize_program()
+        inp = float(input(f'Enter altitude [{type_list[check_type]}]: '))
+        if inp > 86000 or inp < 0:
+            if inp < 0:
+                print("--> You're under water... Please choose a value above water")
+            else:
+                print("--> You're in space now! Congrats! However please input a valid altitude in the atmosphere")
+            inp = inp_height(check_type)
         return inp
 
+    define_standard_SLTemp()
     check_type = height_type()
     inp = inp_height(check_type)
 
@@ -82,18 +98,22 @@ def initialize_program() -> float:
 
     return inp
 
-def calc_height_temperature(height: int, t0: float, layer: Layer) -> float:
-    return t0 + min(height, layer.max_height) * layer.coefficient
-def calc_height_pressure(altitude : int, p0 : float, t0 : float, t1: float, layer: Layer) -> float:
+
+def calc_height_temperature(height: float, t0: float, layer: Layer) -> float:
+    return t0 + (min(height, layer.max_height) - layer.min_height) * layer.coefficient
+
+def calc_height_pressure(altitude : float, p0 : float, t0 : float, t1: float, layer: Layer) -> float:
 
     if layer.layer_type == 'non-isothermal':
         return p0 * (t1 / t0) ** (-base_gravity / (layer.coefficient * gas_constant))
     elif layer.layer_type == 'isothermal':
         return p0 * math.e ** (-(base_gravity / (gas_constant * t0)) * (min(altitude, layer.max_height) - layer.min_height))
+
+
 def calc_density(pressure : float, temperature : float) -> float:
     return pressure / (gas_constant * temperature)
 
-def calc_layer_properties(altitude: int, t0: float, p0: float, layer: Layer):
+def calc_layer_properties(altitude: float, t0: float, p0: float, layer: Layer) -> tuple[float, float, float]:
     temperature = calc_height_temperature(altitude, t0, layer)
     pressure = calc_height_pressure(altitude, p0, t0, temperature, layer)
     density = calc_density(pressure, temperature)
@@ -107,13 +127,19 @@ def main():
     for num, layer in enumerate(layers, start=1):
 
         layer_props = calc_layer_properties(min(layer.max_height, altitude), layer_props[0], layer_props[1], layer)
-        print(f'Computation: {num}, {layer.layer_name} layer\n'
+        """print(f'Computation: {num}, {layer.layer_name} layer\n'
               f'    Height : {min(altitude, layer.max_height)} m\n'
               f'    Temperature: {round(layer_props[0], 2)} K\n'
               f'    Pressure: {round(layer_props[1], 0)} Pa\n'
-              f'    Density : {round(layer_props[2], 4)} kg/m3')
+              f'    Density : {round(layer_props[2], 4)} kg/m3')"""
 
         if altitude <= layer.max_height:
+            print(f'Computation up to: {layer.layer_name} layer\n'
+                  f'    Height :        {min(altitude, layer.max_height)} m\n'
+                  f'    Temperature:    {round(layer_props[0], 2)} K\n'
+                  f'    Pressure:       {round(layer_props[1], 0)} Pa\n'
+                  f'    Density :       {round(layer_props[2], 4)} kg/m3')
+
             break
 
 

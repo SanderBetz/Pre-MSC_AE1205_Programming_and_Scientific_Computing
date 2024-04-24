@@ -115,7 +115,7 @@ def calc_layer_properties(altitude: int, t0: float, p0: float, layer: Layer):
 
 
 def main():
-    "altitude = initialize_program()"
+    altitude = initialize_program()
 
 
     height_list = []
@@ -130,12 +130,12 @@ def main():
         for num, layer in enumerate(layers, start=1):
 
             layer_props = calc_layer_properties(min(layer.max_height, h), layer_props[0], layer_props[1], layer)
-            """
-            print(f'Computation: {num}, {layer.layer_name} layer\n'
-                  f'    Height : {min(altitude, layer.max_height)} m\n'
-                  f'    Temperature: {round(layer_props[0], 2)} K\n'
-                  f'    Pressure: {round(layer_props[1], 0)} Pa\n'
-                  f'    Density : {round(layer_props[2], 4)} kg/m3')"""
+            if h == altitude:
+                print(f'Computation: {num}, {layer.layer_name} layer\n'
+                      f'    Height : {min(altitude, layer.max_height)} m\n'
+                      f'    Temperature: {round(layer_props[0], 2)} K\n'
+                      f'    Pressure: {round(layer_props[1], 0)} Pa\n'
+                      f'    Density : {round(layer_props[2], 4)} kg/m3')
 
             if h <= layer.max_height:
                 break
