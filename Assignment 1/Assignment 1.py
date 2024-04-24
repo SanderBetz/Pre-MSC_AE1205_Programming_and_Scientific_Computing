@@ -47,12 +47,17 @@ layers = [
 ]
 
 def initialize_program() -> float:
+    # This function is used to initialize the program, see it as a "MAIN MENU" of the program
+    # First a change in base temperature is requested, then a menu for which type of height [m, ft, FL] you want.
+    # Then the requested height is input into the calculation
+    # All calculations are performed in Metric ISA, so requests in ft and FL are first converted to meters, then the calculation is performed
+
     print("***** ISA calculator *****")
 
     type_list = {1: 'm', 2: 'ft', 3: 'FL'}
 
     def define_standard_SLTemp() -> None:
-        global base_temperature
+        global base_temperature     # Modify the base temperature though global (soft const) variable change
         ent = input('Would you like to change the starting sea level temperature? \n'
                     'If no change is requested, press ENTER, otherwise enter temperature: ')
         if ent == '':
@@ -69,6 +74,9 @@ def initialize_program() -> float:
         type_height = int(input('Enter your choise (number from list): '))
         if abs(type_height) > 3:
             print('--> Please input a valid selection')
+
+            # If a non-valid option is chosen, rerun (recursion safety) the function with a returned value
+            # This ensures that a valid option is finally passed through the program
             type_height = height_type()
         return type_height
 
@@ -79,13 +87,18 @@ def initialize_program() -> float:
                 print("--> You're under water... Please choose a value above water")
             else:
                 print("--> You're in space now! Congrats! However please input a valid altitude in the atmosphere")
+
+            # If a non-valid option is chosen, rerun (recursion safety) the function with a returned value
+            # This ensures that a valid option is finally passed through the program
             inp = inp_height(check_type)
         return inp
 
+    # Actual menu loop
     define_standard_SLTemp()
     check_type = height_type()
     inp = inp_height(check_type)
 
+    # Conversion from ft, FL to meters
     if check_type == 2:
         inp *= ft_to_m
     elif check_type == 3:
@@ -95,9 +108,12 @@ def initialize_program() -> float:
 
 
 def calc_height_temperature(height: float, t0: float, layer: Layer) -> float:
+    """Standard calculation of temperature based on input temperature"""
     return t0 + (min(height, layer.max_height) - layer.min_height) * layer.coefficient
 
 def calc_height_pressure(altitude : float, p0 : float, t0 : float, t1: float, layer: Layer) -> float:
+    # Calculation of pressure based on earlier calculation of temperature
+    # The calculation is split in a non-isothermal and an isothermal calculation based on the layer.type, defined in original parameters from assignment
     if layer.layer_type == 'non-isothermal':
         return p0 * (t1 / t0) ** (-base_gravity / (layer.coefficient * gas_constant))
     elif layer.layer_type == 'isothermal':
@@ -105,9 +121,11 @@ def calc_height_pressure(altitude : float, p0 : float, t0 : float, t1: float, la
 
 
 def calc_density(pressure : float, temperature : float) -> float:
+    """Calculation of density based on earlier calculation of temperature and pressure"""
     return pressure / (gas_constant * temperature)
 
 def calc_layer_properties(altitude: float, t0: float, p0: float, layer: Layer) -> tuple[float, float, float]:
+    # This calculation performs the calculations of the actual layer, so that the main loop remains clean
     temperature = calc_height_temperature(altitude, t0, layer)
     pressure = calc_height_pressure(altitude, p0, t0, temperature, layer)
     density = calc_density(pressure, temperature)
@@ -115,11 +133,20 @@ def calc_layer_properties(altitude: float, t0: float, p0: float, layer: Layer) -
     return temperature, pressure, density
 
 def main():
+    # initialize program and get the wanted altitude for the calculation
     altitude = initialize_program()
+
+    # initialize the layer properties for first calculation. This could be seen as a layer from 0m to 0m
+    # This initial property is used in the first for loop calculation in the function input
     layer_props = (base_temperature, base_pressure, None)
 
     for num, layer in enumerate(layers, start=1):
+        # The for loop will run for as long as the calculated height is below the maximum height of the layer the calculation is performed in
+        # When the maximum height layer exceeds the requested height, the for loop is terminated
 
+        # Calculate the layer properties of the current layer, then insert these into the next for loop calculation through function parameters
+        # This could also probably be done without a for loop, instead though recursion, however for clarity sake this is done here
+        # Within recursion the passed calculations are passed lines down, here it's loop starts -> function called (right) -> into variable (left) -> end loop
         layer_props = calc_layer_properties(min(layer.max_height, altitude), layer_props[0], layer_props[1], layer)
         """print(f'Computation: {num}, {layer.layer_name} layer\n'
               f'    Height : {min(altitude, layer.max_height)} m\n'
@@ -128,6 +155,7 @@ def main():
               f'    Density : {round(layer_props[2], 4)} kg/m3')"""
 
         if altitude <= layer.max_height:
+            # Terminate the for loop when the maximum layer height exceeds the input altitude
             print(f'Computation up to: {layer.layer_name} layer\n'
                   f'    Height :        {min(altitude, layer.max_height)} m\n'
                   f'    Temperature:    {round(layer_props[0], 2)} K\n'
