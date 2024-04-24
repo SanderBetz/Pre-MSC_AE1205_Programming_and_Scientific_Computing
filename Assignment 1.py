@@ -38,23 +38,18 @@ class Layer:
 
 layers = [
     Layer(0, 11000, -0.0065, 'Troposphere', 'non-isothermal'),
-    Layer(11000, 20000, 0, 'Troposphere', 'isothermal'),
-    Layer(20000, 32000, 0.0010, 'Stratosphere', 'non-isothermal'),
-    Layer(32000, 47000, 0.0028, 'Stratosphere', 'non-isothermal'),
-    Layer(47000, 51000, 0, 'Stratopause', 'isothermal'),
-    Layer(51000, 71000, -0.0028, 'Mesosphere', 'non-isothermal'),
-    Layer(71000, 86000, -0.0020, 'Mesosphere', 'non-isothermal'),
+    Layer(11001, 20000, 0, 'Troposphere', 'isothermal'),
+    Layer(20001, 32000, 0.0010, 'Stratosphere', 'non-isothermal'),
+    Layer(32001, 47000, 0.0028, 'Stratosphere', 'non-isothermal'),
+    Layer(47001, 51000, 0, 'Stratopause', 'isothermal'),
+    Layer(51001, 71000, -0.0028, 'Mesosphere', 'non-isothermal'),
+    Layer(71001, 86000, -0.0020, 'Mesosphere', 'non-isothermal'),
 ]
 
 def initialize_program() -> float:
     print("***** ISA calculator *****")
 
-
-    type_list = {
-        1: 'm',
-        2: 'ft',
-        3: 'FL'
-    }
+    type_list = {1: 'm', 2: 'ft', 3: 'FL'}
 
     def define_standard_SLTemp() -> None:
         global base_temperature
@@ -68,9 +63,9 @@ def initialize_program() -> float:
             base_temperature = float(ent)
 
     def height_type() -> int:
-        print('1. Calculate ISA for altitude in meters')
-        print('2. Calculate ISA for altitude in feet')
-        print('3. Calculate ISA for altitude in FL')
+        print('1. Calculate ISA for altitude in meters \n'
+              '2. Calculate ISA for altitude in feet \n'
+              '3. Calculate ISA for altitude in FL')
         type_height = int(input('Enter your choise (number from list): '))
         if abs(type_height) > 3:
             print('--> Please input a valid selection')
@@ -103,7 +98,6 @@ def calc_height_temperature(height: float, t0: float, layer: Layer) -> float:
     return t0 + (min(height, layer.max_height) - layer.min_height) * layer.coefficient
 
 def calc_height_pressure(altitude : float, p0 : float, t0 : float, t1: float, layer: Layer) -> float:
-
     if layer.layer_type == 'non-isothermal':
         return p0 * (t1 / t0) ** (-base_gravity / (layer.coefficient * gas_constant))
     elif layer.layer_type == 'isothermal':
