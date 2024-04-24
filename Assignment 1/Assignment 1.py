@@ -75,7 +75,7 @@ def initialize_program() -> float:
               '2. Calculate ISA for altitude in feet \n'
               '3. Calculate ISA for altitude in FL')
         type_height = int(input('Enter your choise (number from list): '))
-        if abs(type_height) > 3:
+        if abs(type_height) > 3 or type_height == 0:
             print('--> Please input a valid selection')
 
             # If a non-valid option is chosen, rerun (recursion safety) the function with a returned value
