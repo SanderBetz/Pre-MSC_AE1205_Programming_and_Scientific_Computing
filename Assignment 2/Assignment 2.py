@@ -46,7 +46,7 @@ def ask_guess(cur_guess: int) -> list[int]:
     return guess
 
 def compare_guess(game_sequence: list, guess_sequence: list) -> list:
-    guess_states : list= [0, 0, 0, 0]
+    guess_states : list = [0, 0, 0, 0]
     for n, key, value in zip([0, 1, 2, 3], guess_sequence, game_sequence):
         if key == value:
             guess_states[n] = 2
@@ -98,13 +98,19 @@ def main():
     game_sequence = init_game()
 
     while not_guessed:
+        # Ask the user for a guess
         guess = ask_guess(guess_num)
+
+        # Compare the guess to the generated "secret" sequence
         states = compare_guess(game_sequence, guess)
+
+        # Print whatever the previous function returned
         evaluate_guess(states)
 
         # Game ended?
         guess_num += 1
 
+        # See if the game should end, restart or continue
         not_guessed = end_game_handling(guess_num, states, game_sequence)
 
 if __name__ == '__main__':
