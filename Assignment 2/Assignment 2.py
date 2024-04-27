@@ -95,6 +95,5 @@ def main():
 
         not_guessed = end_game_handling(guess_num, states, game_sequence)
 
-
 if __name__ == '__main__':
     main()
