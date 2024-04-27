@@ -3,7 +3,6 @@
 
 # Put imports here
 import random
-import math
 
 max_guesses = 10
 guess_num = 0
