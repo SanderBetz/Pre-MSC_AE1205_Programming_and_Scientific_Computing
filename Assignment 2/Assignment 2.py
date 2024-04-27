@@ -20,7 +20,6 @@ def generate_sequence() -> list:
             seq = generate_sequence()
             break
 
-    print(seq)
     return seq
 
 def init_game() -> list:
