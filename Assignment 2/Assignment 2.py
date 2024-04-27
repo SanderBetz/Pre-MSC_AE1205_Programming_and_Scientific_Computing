@@ -1,3 +1,6 @@
+# AUTHOR: SANDER BETZ
+# ST. NR: 6070000
+
 # Put imports here
 import random
 import math
@@ -62,17 +65,18 @@ def restart_game() -> bool:
     if ans in possibilities:
         guess_num = 0
         return True
+    print("--> You chose not to replay. Thank you for playing! Goodbye!")
     return False
 
 
 def end_game_handling(curr_guess: int, states: list, win_sequence: list) -> bool:
     if curr_guess >= max_guesses:
-        print(f'--> Maximum guesses reached, you lose! The seqeuence was'
-              f'{str(win_sequence).replace("[", "").replace("]", "").replace(", ", "")}')
+        print(f'--> Maximum guesses reached, you lose! The sequence was'
+              f'{str(win_sequence).replace("[", "").replace("]", "").replace(", ", " ")}')
         return restart_game()
     elif states == [2, 2, 2, 2]:
         print(f'--> Well done! The sequence was indeed '
-              f'{str(win_sequence).replace("[", "").replace("]", "").replace(", ", "")}, '
+              f'{str(win_sequence).replace("[", "").replace("]", "").replace(", ", " ")}, '
               f'you win! ')
         return restart_game()
     return True
@@ -86,6 +90,7 @@ def main():
     game_sequence = init_game()
 
     while not_guessed:
+        print(game_sequence)
         guess = ask_guess(guess_num)
         states = compare_guess(game_sequence, guess)
         evaluate_guess(states)
