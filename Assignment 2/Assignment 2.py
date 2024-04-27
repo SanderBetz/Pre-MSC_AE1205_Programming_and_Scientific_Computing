@@ -3,10 +3,24 @@ import random
 import math
 
 max_guesses = 10
+guess_num = 0
 
 # Main code
 def init_game():
-    game_sequence = random.sample([i for i in range(1, 7)], 4)
+    def generate_sequence():
+        # This function may look weird, however it is recursion safe
+        # The function checks if all numbers are unique, if it is detected that there are more instances of a number in
+        # the sequence, the function calls itself again, and triggers the BREAK. This ensures that when a new sequence
+        # is generated, the for loop will not check other numbers in the original sequence. Therefore, if multiple
+        # sequences are flawed and one is generated good. The function will collapse due to a chain of breaks in subsequent functions.
+        seq = random.sample([i for i in range(1, 7)], 4)
+        for i in range(6):
+            if seq.count(i) > 1:
+                seq = generate_sequence()
+                break
+        return seq
+
+    game_sequence = generate_sequence()
 
     print(" *** Mastermind Game! *** ")
 
@@ -35,55 +49,51 @@ def compare_guess(game_sequence, guess_sequence):
             continue
     return guess_states
 
-def retry_game() -> bool:
-    answers = ['', 'y', 'yes']
-    ans = input('Would you like to play another game? \n'
-                'Press ENTER, Y, or YES to start another')
-    if ans.lower() in answers:
-        return False
-    return True
-
 def evaluate_guess(states: list) -> None:
     print(f'--> {states.count(0)} not in sequence \n'
           f'--> {states.count(1)} in sequence, wrong place \n'
           f'--> {states.count(2)} in sequence, good location')
+
+def restart_game() -> bool:
+    global guess_num
+    possibilities = ['', 'y', 'yes']
+    ans = input("Do you want to play another game? Press ENTER, Y, or type YES\n"
+                "You entered: ").lower()
+    if ans in possibilities:
+        guess_num = 0
+        return True
+    return False
+
+
+def end_game_handling(curr_guess: int, states: list, win_sequence: list) -> bool:
+    if curr_guess >= max_guesses:
+        print(f'--> Maximum guesses reached, you lose! The seqeuence was'
+              f'{str(win_sequence).replace("[", "").replace("]", "").replace(", ", "")}')
+        return restart_game()
+    elif states == [2, 2, 2, 2]:
+        print(f'--> Well done! The sequence was indeed '
+              f'{str(win_sequence).replace("[", "").replace("]", "").replace(", ", "")}, '
+              f'you win! ')
+        return restart_game()
+    return True
+
+
 def main():
     debug_mode = True
+    not_guessed = True
+    global guess_num
 
     game_sequence = init_game()
-    if debug_mode:
-        game_sequence = [1, 2, 3, 4]
-
-    not_guessed = True
-    guess_num = 0
 
     while not_guessed:
         guess = ask_guess(guess_num)
         states = compare_guess(game_sequence, guess)
         evaluate_guess(states)
 
-
-        if not debug_mode:
-            print(game_sequence)
-            print(guess)
-            print(states)
-
-        # MAKE THIS A FUNCTION WITH A BREAK!
-        if guess_num >= max_guesses:
-            print('--> You Lose!')
-            break
-        elif states == [2, 2, 2, 2]:
-            print('--> You win!')
-            break
-
-        not_guessed = retry_game()
-        if not not_guessed:
-            guess_num = 0
-
+        # Game ended?
         guess_num += 1
 
-
-
+        not_guessed = end_game_handling(guess_num, states, game_sequence)
 
 
 if __name__ == '__main__':
