@@ -19,7 +19,6 @@ def generate_sequence() -> list:
         if seq.count(i) > 1:
             seq = generate_sequence()
             break
-
     return seq
 
 def init_game() -> list:
