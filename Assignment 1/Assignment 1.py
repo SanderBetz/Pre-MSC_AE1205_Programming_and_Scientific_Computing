@@ -70,8 +70,9 @@ def initialize_program() -> float:
                 print(f'--> Change in base ISA requested from T[0 m]: {base_temperature} K to T[0 m]: {float(ent)} K')
                 base_temperature = float(ent)
 
+
     def height_type() -> int:
-        print('1. Calculate ISA for altitude in meters \n'
+        print('1. Calculate I./SA for altitude in meters \n'
               '2. Calculate ISA for altitude in feet \n'
               '3. Calculate ISA for altitude in FL')
         type_height = int(input('Enter your choise (number from list): '))
