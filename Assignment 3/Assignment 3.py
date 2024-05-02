@@ -30,6 +30,7 @@ def compare_letter_freq():
 
 def decypher(shift: int):
     alphabet = 'ABCDEFGHIJKLMNOPQRTSUVWXYZ'
+
     ...
 
 
