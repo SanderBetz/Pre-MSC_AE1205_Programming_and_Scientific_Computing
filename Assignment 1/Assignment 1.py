@@ -161,7 +161,7 @@ def main():
             # Terminate the for loop when the maximum layer height exceeds the input altitude
             print(f'Computation up to: {layer.layer_name} layer\n'
                   f'    Height :        {min(altitude, layer.max_height)} m\n'
-                  f'    Temperature:    {round(layer_props[0], 2)} K\n'
+                  f'    Temperature:    {round(layer_props[0], 2) - 273.15} K\n'
                   f'    Pressure:       {round(layer_props[1], 0)} Pa\n'
                   f'    Density :       {round(layer_props[2], 4)} kg/m3')
 

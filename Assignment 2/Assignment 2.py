@@ -73,7 +73,6 @@ def restart_game() -> bool:
     print("--> You chose not to replay. Thank you for playing! Goodbye!")
     return False
 
-
 def end_game_handling(curr_guess: int, states: list, win_sequence: list) -> bool:
     if curr_guess >= max_guesses:
         print(f'--> Maximum guesses reached, you lose! The sequence was'
