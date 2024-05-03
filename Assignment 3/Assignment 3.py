@@ -83,17 +83,16 @@ def decypher(path: str, shifted: dict):
     print((''.join(final_text))[0:30])
 
 def main():
-    text = 'secret6'
+    text = 'secret0'
     freqs = load_letter_freq()
     letter_set, letter_length = read_file(text)
     letter_freqs = get_letter_freq(letter_set, letter_length)
     shift = compare_letter_freq(freqs, letter_freqs)
     print(shift)
 
-    for shifttemp in range(26):
-        shifted_alphabet = shift_alphabet(shifttemp)
-        print(shifttemp)
-        decypher(text, shifted_alphabet)
+    shifted_alphabet = shift_alphabet(26 - shift)
+    print(shift)
+    decypher(text, shifted_alphabet)
 
 if __name__ == '__main__':
     main()
