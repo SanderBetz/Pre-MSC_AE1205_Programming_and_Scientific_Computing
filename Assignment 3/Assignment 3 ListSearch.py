@@ -87,6 +87,7 @@ def main(path):
 
     alphabet_shifted = shift_alphabet(pred_shift)
 
+    print(f'--> Decypher key: {pred_shift}')
     decypher(path, alphabet_shifted, only_first_characters=50)
 
 if __name__ == '__main__':
