@@ -13,24 +13,22 @@ R = 191.84
 
 # Vehicle properties
 start_velocity = 262
-start_mass = 5500
 start_angle = math.radians(-20)             # radians
 
-
-mass = 5500
 C_d_mult_S = 4.92
 v_exit = 4400
 dry_mass = 699.0
-fuel_mass = mass - dry_mass
 k_v = 0.05
-v_y_ref = -2.0
 
-h_t = 10000
 delta_time = 0.1    # Seconds
 
 def main():
     mars_atmosphere_properties = marsatm.marsinit()
 
+    mass = 2000
+    h_t = 7000
+
+    start_mass = mass
     time_log = []
     y_log = []
     x_log = []
@@ -42,7 +40,7 @@ def main():
 
     landed = False
 
-    height = 20000                  # meters
+    height = 20000  # meters
     x = 0
     angle = math.radians(-20)
 
@@ -50,15 +48,18 @@ def main():
 
     v_x = start_velocity * math.cos(start_angle)
     v_y = start_velocity * math.sin(start_angle)
-    v_total = math.sqrt(v_x**2 + v_y**2)
-
-    mass = 5500
+    v_total = math.sqrt(v_x ** 2 + v_y ** 2)
 
     while not landed:
         pressure, temperature, density, sound_vel = marsatm.marsatm(height, mars_atmosphere_properties)
 
+        if height > 50:
+            v_y_ref = -2.0 - 0.01 * height
+        else:
+            v_y_ref = -2.0
         F_gravity = mass * g_0
         delta_v_y = v_y_ref - v_y
+
         if height > h_t:
             m_dot = 0
         else:
@@ -70,7 +71,7 @@ def main():
         F_drag = (1/2) * density * v_total ** 2 * C_d_mult_S
 
         accel_x = (-F_thrust * math.cos(angle) - F_drag * math.cos(angle)) / mass
-        accel_y = (F_thrust * math.sin(angle) + F_drag * math.sin(angle) - mass * g_0) / mass
+        accel_y = (-F_thrust * math.sin(angle) - F_drag * math.sin(angle) - F_gravity) / mass
 
         # Update all values
         v_x += accel_x * delta_time
@@ -78,7 +79,11 @@ def main():
         v_total = math.sqrt(v_x ** 2 + v_y ** 2)
         height += v_y * delta_time
         x += v_x * delta_time
-        angle = math.atan(v_y / v_x)
+
+        if abs(angle - math.atan(v_y / v_x)) < math.radians(10):
+            angle = math.atan(v_y / v_x)
+        else:
+            angle = angle
         mass -= m_dot * delta_time
 
         time_log.append(total_time)
@@ -92,11 +97,17 @@ def main():
 
         print(f'Time: {round(total_time, 2)}, Alt: {round(height, 2)}, Vel: {round(v_total, 2)}, '
               f'Vel x: {round(v_x, 2)}, Vel y: {round(v_y, 2)}, Angle: {round(angle, 2)} '
-              f'Thrust: {F_thrust}, Accel x: {accel_x}, Accel y: {accel_y} '
-              f'Mass: {mass}, F_drag: {F_drag}')
+              f'Thrust: {round(F_thrust, 2)}, Accel x: {round(accel_x, 2)}, Accel y: {round(accel_y, 2)} '
+              f'Mass: {round(mass, 2)}, F_drag: {round(F_drag, 2)}, Vel y wanted: {round(v_y_ref, 2)}')
+
 
         total_time += delta_time
-        if height < 100:
+        if height < 0.3:
+            print(f'Final time: {round(total_time)} sec, '
+                  f'Start mass: {round(start_mass, 2)} kg, '
+                  f'Thruster height start: {round(h_t, 2)} m, '
+                  f'Fuel burned: {round(start_mass - mass, 2)} kg '
+                  f'Landed with: {round(v_total, 2)} m/s')
             break
 
     # Generate the plots
@@ -144,8 +155,6 @@ def main():
 
     # Show plot window
     plt.show()
-
-    print('Simulation finished after: ', total_time, 'seconds.')
 
 if __name__ == '__main__':
     main()
