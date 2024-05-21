@@ -88,7 +88,7 @@ def main(path):
     alphabet_shifted = shift_alphabet(pred_shift)
 
     print(f'--> Decypher key (alphabet shift): {pred_shift}')
-    decypher(path, alphabet_shifted, only_first_characters=100)
+    decypher(path, alphabet_shifted, only_first_characters=1000)
 
 if __name__ == '__main__':
     paths = ['testdata', 'secret0', 'secret1', 'secret2', 'secret3', 'secret4', 'secret5', 'secret6']
@@ -96,3 +96,4 @@ if __name__ == '__main__':
         print(f'\n'
               f'--> Now decyphering: {i}')
         main(i)
+

@@ -28,6 +28,7 @@ def main():
     mass = 2000
     h_t = 7000
 
+    # initialize logging values
     start_mass = mass
     time_log = []
     y_log = []
@@ -51,25 +52,34 @@ def main():
     v_total = math.sqrt(v_x ** 2 + v_y ** 2)
 
     while not landed:
+        # Load atmospheric properties from precalculated NASA tables
         pressure, temperature, density, sound_vel = marsatm.marsatm(height, mars_atmosphere_properties)
 
-        if height > 50:
-            v_y_ref = -2.0 - 0.01 * height
-        else:
-            v_y_ref = -2.0
+        def v_y_ref():
+            if height > 50:
+                v_y_ref = -2.0 - 0.01 * height
+            else:
+                v_y_ref = -2.0
+            return v_y_ref
+
+        def m_dot():
+            if height > h_t:
+                m_dot = 0
+            else:
+                m_dot = (mass * g_0) / v_exit + k_v * delta_v_y
+
+            if m_dot > 5.:
+                m_dot = 5.
+            return m_dot
+
+        delta_v_y = v_y_ref() - v_y
+
+        # Forces acting on body
         F_gravity = mass * g_0
-        delta_v_y = v_y_ref - v_y
-
-        if height > h_t:
-            m_dot = 0
-        else:
-            m_dot = (mass * g_0) / v_exit + k_v * delta_v_y
-
-        if m_dot > 5.:
-            m_dot = 5.
-        F_thrust = m_dot * v_exit
+        F_thrust = m_dot() * v_exit
         F_drag = (1/2) * density * v_total ** 2 * C_d_mult_S
 
+        # Calculate accelerations from dynamic force calculations
         accel_x = (-F_thrust * math.cos(angle) - F_drag * math.cos(angle)) / mass
         accel_y = (-F_thrust * math.sin(angle) - F_drag * math.sin(angle) - F_gravity) / mass
 
@@ -84,7 +94,7 @@ def main():
             angle = math.atan(v_y / v_x)
         else:
             angle = angle
-        mass -= m_dot * delta_time
+        mass -= m_dot() * delta_time
 
         time_log.append(total_time)
         x_log.append(x)
@@ -93,12 +103,12 @@ def main():
         vy_log.append(v_y)
         velocity_log.append(v_total)
         gamma_log.append(math.degrees(angle))
-        mdot_log.append(m_dot)
+        mdot_log.append(m_dot())
 
         print(f'Time: {round(total_time, 2)}, Alt: {round(height, 2)}, Vel: {round(v_total, 2)}, '
               f'Vel x: {round(v_x, 2)}, Vel y: {round(v_y, 2)}, Angle: {round(angle, 2)} '
               f'Thrust: {round(F_thrust, 2)}, Accel x: {round(accel_x, 2)}, Accel y: {round(accel_y, 2)} '
-              f'Mass: {round(mass, 2)}, F_drag: {round(F_drag, 2)}, Vel y wanted: {round(v_y_ref, 2)}')
+              f'Mass: {round(mass, 2)}, F_drag: {round(F_drag, 2)}, Vel y wanted: {round(v_y_ref(), 2)}')
 
 
         total_time += delta_time
@@ -123,8 +133,8 @@ def main():
     plt.subplot(232)
     plt.plot(vx_log, vy_log)
     plt.title('Speed')
-    plt.xlabel('x velocity')
-    plt.ylabel('y velocity')
+    plt.xlabel('Vx [m/s]')
+    plt.ylabel('Vy [m/s]')
 
     plt.subplot(233)
     plt.plot(time_log, mdot_log)
@@ -140,9 +150,10 @@ def main():
     plt.ylabel('Height [m]')
 
     plt.subplot(235)
-    plt.plot(time_log, velocity_log)
+    plt.plot(time_log, velocity_log, color='b')
     plt.plot(time_log, vx_log, color='r')
     plt.plot(time_log, vy_log, color='g')
+    plt.legend(['Vtot', 'Vx', 'Vy'])
     plt.title('Spd vs time')
     plt.xlabel('Time [s]')
     plt.ylabel('Velocity [m/s]')
@@ -152,6 +163,7 @@ def main():
     plt.title('Gamma vs time')
     plt.xlabel('Time [s]')
     plt.ylabel('Angle [deg]')
+
 
     # Show plot window
     plt.show()

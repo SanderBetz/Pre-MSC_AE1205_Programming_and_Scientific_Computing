@@ -31,7 +31,7 @@ def main():
     results = []
 
     for h_t in range(2000, 10000, 100):
-        for mass in range(1500, 5000, 100):
+        for mass in range(1000, 5000, 100):
             start_mass = mass
             time_log = []
             y_log = []
@@ -106,7 +106,7 @@ def main():
                     print(f'Final time: {round(total_time)} sec, '
                           f'Start mass: {round(start_mass, 2)} kg, '
                           f'Thruster height start: {round(h_t, 2)} m, '
-                          f'Fuel burned: {round(start_mass - mass, 2)} kg'
+                          f'Fuel burned: {round(start_mass - mass, 2)} kg '
                           f'Landed with: {round(v_total, 2)} m/s')
                     if total_time > 500 or v_total > 3.:
                         break
