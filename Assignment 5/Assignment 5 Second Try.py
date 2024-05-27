@@ -25,11 +25,11 @@ RESOLUTION = (1000, 800)
 screen = pg.display.set_mode(RESOLUTION)
 scrrect = screen.get_rect()
 
-aircraft_speed = 200
+aircraft_speed = 100
 aircraft_rotation = math.pi
+computer_rotation = math.pi - 0.7
 missile_speed = 1000
-spawn_protection = 0.
-
+spawn_protection = 5
 
 class Airplane:
     def __init__(self, aircraft_type: str, location: tuple, direction: float, velocity: int, controller: str, owner = None):
@@ -91,10 +91,13 @@ def main():
     blue_start_pos  = (((RESOLUTION[0] / 2) + 100) / RESOLUTION[0],
                      int(RESOLUTION[1] / 2) / RESOLUTION[1])
 
+    green_start_pos = (((RESOLUTION[0] / 5) + 100) / RESOLUTION[0],
+                      int(RESOLUTION[1] / 5) / RESOLUTION[1])
+
     objects_in_air = []
     
     red_plane = Airplane('Red', red_start_pos, math.pi,  aircraft_speed, 'Player_A')
-    blue_plane = Airplane('Blue', blue_start_pos, 0., aircraft_speed, 'Player_B')
+    blue_plane = Airplane('Blue', blue_start_pos, 0.1, aircraft_speed, 'Computer')
 
     objects_in_air.append(red_plane)
     objects_in_air.append(blue_plane)
@@ -105,6 +108,7 @@ def main():
     black = (0, 0, 0)
     white = (255, 255, 255)
     green = (0, 255, 0)
+    red = (255, 0, 0)
 
     dt = 0.01
     tsim = 0.0
@@ -122,9 +126,28 @@ def main():
 
             # Movement handler
             for aircraft in objects_in_air:
-                def calculate_turn(self: Airplane, other: Airplane):
-                    print(self.theta, math.atan2((self.x - other.x) , (self.y - other.y)))
-                    return math.pi * dt
+                def calculate_turn(self: Airplane, other: Airplane) -> float:
+                    offset = 2
+                    distance = math.sqrt((self.x - other.x) ** 2 + (self.y - other.y)**2 )
+                    print(self.theta)
+                    # pg.draw.line(screen, green, (self.x_to_draw, self.y_to_draw), (self.x_to_draw + distance * math.cos(-self.theta) * RESOLUTION[0], self.y_to_draw + distance * math.sin(-self.theta) * RESOLUTION[1]))
+
+                    if self.y_to_draw + distance * math.sin(-self.theta) * RESOLUTION[1] > other.y_to_draw + offset:
+                        if self.x_to_draw < other.x_to_draw + offset:
+                            return computer_rotation * dt
+                        elif self.x_to_draw > other.x_to_draw - offset:
+                            return - computer_rotation * dt
+                        else:
+                            return 0
+                    elif self.y_to_draw + distance * math.sin(-self.theta) * RESOLUTION[1] < other.y_to_draw - offset:
+                        if self.x_to_draw < other.x_to_draw + offset:
+                            return - computer_rotation * dt
+                        elif self.x_to_draw > other.x_to_draw - offset:
+                            return computer_rotation * dt
+                        else:
+                            return 0
+                    else:
+                        return 0
 
                 keys = pygame.key.get_pressed()
                 if aircraft.controller == 'Player_A':
@@ -136,8 +159,6 @@ def main():
                         # Check if there is already a missile from Player A, if so -> Don't spawn
                         if sum(checker.owner == aircraft for checker in objects_in_air) <= 0 and tsim > spawn_protection:
                             objects_in_air.append(Airplane('Missile', (aircraft.x, aircraft.y), aircraft.theta,  missile_speed, 'Missile', aircraft))
-                        elif tsim < spawn_protection:
-                            print('Spawn protection!')
                     if keys[pygame.K_SPACE]:
                         time.sleep(1000)
                 elif aircraft.controller == 'Player_B':
@@ -149,12 +170,12 @@ def main():
                         # Check if there is already a missile from Player B, if so -> Don't spawn
                         if sum(checker.owner == aircraft for checker in objects_in_air) <= 0 and tsim > spawn_protection:
                             objects_in_air.append(Airplane('Missile', (aircraft.x, aircraft.y), aircraft.theta, missile_speed, 'Missile', aircraft))
-                        elif tsim < spawn_protection:
-                            print('Spawn protection!')
                     if keys[pygame.K_SPACE]:
                         time.sleep(1000)
                 elif aircraft.controller == 'Computer':
-                    aircraft.theta += calculate_turn(aircraft, red_plane)
+                    aircraft.theta += calculate_turn(aircraft, [other_aircraft for other_aircraft in objects_in_air if other_aircraft != aircraft and other_aircraft.controller != 'Missile'][0])
+                    if sum(checker.owner == aircraft for checker in objects_in_air) <= 0 and tsim > spawn_protection and calculate_turn(aircraft, red_plane) == 0:
+                        objects_in_air.append(Airplane('Missile', (aircraft.x, aircraft.y), aircraft.theta, missile_speed, 'Missile', aircraft))
                 elif aircraft.controller == 'Missile':
                     ...
 
@@ -185,14 +206,14 @@ def main():
                     for checker in objects_in_air:
                         if checker != aircraft.owner and checker != aircraft and checker.controller != 'Missile':
                             distance = math.sqrt((aircraft.x - checker.x) ** 2 + (aircraft.y - checker.y)**2)
-                            print(checker.controller, checker.x, checker.y, aircraft.x, aircraft.y, distance)
-                            if distance < 0.1:
+                            if distance < 0.05:
                                 print(f"{checker.controller} Destroyed!")
 
                                 final_x, final_y = checker.x, checker.y
                                 explosion = True
                                 running = True
                                 objects_in_air.remove(checker)
+                                objects_in_air.remove(aircraft)
 
                     if aircraft.alive_time > 1.:
                         objects_in_air.remove(aircraft)
