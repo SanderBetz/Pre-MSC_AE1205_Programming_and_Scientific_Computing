@@ -91,9 +91,6 @@ def main():
     blue_start_pos  = (((RESOLUTION[0] / 2) + 100) / RESOLUTION[0],
                      int(RESOLUTION[1] / 2) / RESOLUTION[1])
 
-    green_start_pos = (((RESOLUTION[0] / 5) + 100) / RESOLUTION[0],
-                      int(RESOLUTION[1] / 5) / RESOLUTION[1])
-
     objects_in_air = []
     
     red_plane = Airplane('Red', red_start_pos, math.pi,  aircraft_speed, 'Player_A')
@@ -133,16 +130,16 @@ def main():
                     # pg.draw.line(screen, green, (self.x_to_draw, self.y_to_draw), (self.x_to_draw + distance * math.cos(-self.theta) * RESOLUTION[0], self.y_to_draw + distance * math.sin(-self.theta) * RESOLUTION[1]))
 
                     if self.y_to_draw + distance * math.sin(-self.theta) * RESOLUTION[1] > other.y_to_draw + offset:
-                        if self.x_to_draw < other.x_to_draw + offset:
+                        if self.x_to_draw < other.x_to_draw - offset:
                             return computer_rotation * dt
-                        elif self.x_to_draw > other.x_to_draw - offset:
+                        elif self.x_to_draw > other.x_to_draw + offset:
                             return - computer_rotation * dt
                         else:
                             return 0
                     elif self.y_to_draw + distance * math.sin(-self.theta) * RESOLUTION[1] < other.y_to_draw - offset:
-                        if self.x_to_draw < other.x_to_draw + offset:
+                        if self.x_to_draw < other.x_to_draw - offset:
                             return - computer_rotation * dt
-                        elif self.x_to_draw > other.x_to_draw - offset:
+                        elif self.x_to_draw > other.x_to_draw + offset:
                             return computer_rotation * dt
                         else:
                             return 0
