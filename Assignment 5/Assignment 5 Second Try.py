@@ -91,22 +91,27 @@ def main():
     blue_start_pos  = (((RESOLUTION[0] / 2) + 100) / RESOLUTION[0],
                      int(RESOLUTION[1] / 2) / RESOLUTION[1])
 
+    # This list will contain all flying objects in the air at all times
     objects_in_air = []
-    
-    red_plane = Airplane('Red', red_start_pos, math.pi,  aircraft_speed, 'Player_A')
-    blue_plane = Airplane('Blue', blue_start_pos, 0.1, aircraft_speed, 'Player_B')
 
+    # Create aircraft
+    red_plane = Airplane('Red', red_start_pos, math.pi,  aircraft_speed, 'Player_A')
+    blue_plane = Airplane('Blue', blue_start_pos, 0.0, aircraft_speed, 'Player_B')
+
+    # Put aircraft in the objects in air list
     objects_in_air.append(red_plane)
     objects_in_air.append(blue_plane)
 
     # Initialize the main game
     pg.init()
 
+    # Colours to draw
     black = (0, 0, 0)
     white = (255, 255, 255)
     green = (0, 255, 0)
     red = (255, 0, 0)
 
+    # Time settings
     dt = 0.01
     tsim = 0.0
     tstart = 0.001 * pg.time.get_ticks()
@@ -123,7 +128,12 @@ def main():
 
             # Movement handler
             for aircraft in objects_in_air:
+
                 def calculate_turn(self: Airplane, other: Airplane) -> float:
+
+                    # This function is called ONLY when one or more of the aircraft is a COMPUTER.
+                    # This is just an autopilot function to direct the aircraft towards the other one
+
                     offset = 2
                     distance = math.sqrt((self.x - other.x) ** 2 + (self.y - other.y)**2 )
                     print(self.theta)
@@ -146,13 +156,20 @@ def main():
                     else:
                         return 0
 
+
                 keys = pygame.key.get_pressed()
+                if keys[pygame.K_ESCAPE]:
+                    print('ESCAPE KEY HAS BEEN PRESSED, EXITING GAME')
+                    pg.quit()
+
+                # Checks the current aircraft for which keys they should be pressing to control the aircraft
                 if aircraft.controller == 'Player_A':
                     if keys[pygame.K_a]:
                         aircraft.theta += math.pi * dt
                     elif keys[pygame.K_d]:
                         aircraft.theta -= math.pi * dt
                     if keys[pygame.K_s]:
+                        # If the A key is pressed, spawn a missile in the direction and location of the aircraft
                         # Check if there is already a missile from Player A, if so -> Don't spawn
                         if sum(checker.owner == aircraft for checker in objects_in_air) <= 0 and tsim > spawn_protection:
                             objects_in_air.append(Airplane('Missile', (aircraft.x, aircraft.y), aircraft.theta,  missile_speed, 'Missile', aircraft))
@@ -164,18 +181,23 @@ def main():
                     elif keys[pygame.K_SEMICOLON]:
                         aircraft.theta -= math.pi * dt
                     if keys[pygame.K_l]:
+                        # If the A key is pressed, spawn a missile in the direction and location of the aircraft
                         # Check if there is already a missile from Player B, if so -> Don't spawn
                         if sum(checker.owner == aircraft for checker in objects_in_air) <= 0 and tsim > spawn_protection:
                             objects_in_air.append(Airplane('Missile', (aircraft.x, aircraft.y), aircraft.theta, missile_speed, 'Missile', aircraft))
                     if keys[pygame.K_SPACE]:
                         time.sleep(1000)
                 elif aircraft.controller == 'Computer':
+                    # This is the autopilot function, it directs the computer to the player, then fires if it's in the
+                    # direction and a steering input of 0 is detected (aka facing the opponent)
                     aircraft.theta += calculate_turn(aircraft, [other_aircraft for other_aircraft in objects_in_air if other_aircraft != aircraft and other_aircraft.controller != 'Missile'][0])
                     if sum(checker.owner == aircraft for checker in objects_in_air) <= 0 and tsim > spawn_protection and calculate_turn(aircraft, red_plane) == 0:
                         objects_in_air.append(Airplane('Missile', (aircraft.x, aircraft.y), aircraft.theta, missile_speed, 'Missile', aircraft))
                 elif aircraft.controller == 'Missile':
+                    # Not implemented, missiles only go in a straight line. No missile steering implemented
                     ...
 
+                # Update the aircraft parameters
                 aircraft.vx = aircraft.velocity * math.cos(aircraft.theta)
                 aircraft.vy = aircraft.velocity * math.sin(aircraft.theta)
 
@@ -192,6 +214,7 @@ def main():
                 elif aircraft.y > 1:
                     aircraft.y = 0
 
+                # Update the direction of the aircraft image
                 aircraft.rotate()
 
                 aircraft.plane_rect.centerx = aircraft.x_to_draw
@@ -199,6 +222,12 @@ def main():
 
                 aircraft.update(dt)
 
+                # Check if the missile is within explosion distance of the fired-upon object
+                # It does this by checking if:
+                #   - Other object is not self
+                #   - Other object is not a missile
+                #   - Other object is not the owner of the missile (otherwise it would instantly explode)
+                #   - Other object is the OTHER aircraft (Only option left at this point, passing all NOT statements)
                 if aircraft.controller == 'Missile':
                     for checker in objects_in_air:
                         if checker != aircraft.owner and checker != aircraft and checker.controller != 'Missile':
@@ -212,16 +241,19 @@ def main():
                                 objects_in_air.remove(checker)
                                 objects_in_air.remove(aircraft)
 
+                    # Delete the missile from the screen and aircraft list so it's not slowing down the game
+                    # You can see this by printing the list of the aircraft
                     if aircraft.alive_time > 1.:
                         objects_in_air.remove(aircraft)
 
+            # Increment time
             tsim += dt
 
+        # Draw all objects in the objects_in_air list.
         for aircraft in objects_in_air:
             screen.blit(aircraft.plane, aircraft.plane_rect)
 
         pg.display.flip()
-        # print(len(objects_in_air))
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = True
@@ -243,9 +275,10 @@ def main():
         time.sleep(0.25)
         frame += 1
         if frame >= len(frames):
-            time.sleep(5)
+            time.sleep(2)
             explosion = False
 
+    # A very pythonist way of getting only the aircraft that has won, and filtering out all missiles
     remaining_player = str([player.controller for player in objects_in_air if player.controller != 'Missile']).replace('[', '').replace(']', '')
     print(f'The game is over, {remaining_player} has won!')
     # Stop the game based on parameters
