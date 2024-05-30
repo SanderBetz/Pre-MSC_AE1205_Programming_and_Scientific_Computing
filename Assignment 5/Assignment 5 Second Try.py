@@ -29,7 +29,7 @@ aircraft_speed = 100
 aircraft_rotation = math.pi
 computer_rotation = math.pi - 0.7
 missile_speed = 1000
-spawn_protection = 5
+spawn_protection = 1
 
 class Airplane:
     def __init__(self, aircraft_type: str, location: tuple, direction: float, velocity: int, controller: str, owner = None):
@@ -94,7 +94,7 @@ def main():
     objects_in_air = []
     
     red_plane = Airplane('Red', red_start_pos, math.pi,  aircraft_speed, 'Player_A')
-    blue_plane = Airplane('Blue', blue_start_pos, 0.1, aircraft_speed, 'Computer')
+    blue_plane = Airplane('Blue', blue_start_pos, 0.1, aircraft_speed, 'Player_B')
 
     objects_in_air.append(red_plane)
     objects_in_air.append(blue_plane)
